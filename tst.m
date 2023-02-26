@@ -44,8 +44,8 @@ empty_structure.min_distance = 5;
 empty_structure.max_distance = 30;
 
 % Recieve user input for numerical params
-default_params = [empty_structure.min_distance, empty_structure.max_distance];
-output_structure = receive_user_input(default_params);
+% default_params = [empty_structure.min_distance, empty_structure.max_distance];
+output_structure = receive_user_input(empty_structure);
 
 % Get the relevant atoms for the chosen chain
 relevant_atoms = retrieve_data_for_chain(heterogen_atoms, chain_id);
