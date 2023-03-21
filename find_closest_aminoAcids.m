@@ -9,7 +9,7 @@ out = false(1, size(dist_matrix, 2));
 % iterate over columns of the matrix
 for i = 1:size(dist_matrix, 2)
     % compare each value in the column to the minimum distance
-    col = dist_matrix(:, i) < min_dist;
+    col = dist_matrix(:, i) <= min_dist;
     % use any command to find if there is at least one element that is true
     out(i) = any(col);
 end
