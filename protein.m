@@ -83,7 +83,7 @@ minmax_dis = struct("min_distance",[min(dis_metrix(:))], "max_distance",[max(dis
 
 
 % calculate the edges of the bins
-edges = linspace(minmax_dis.min_distance, minmax_dis.max_distance, 50);
+edges = linspace(minmax_dis.min_distance, minmax_dis.max_distance, 49);
 % plot the histogram in a new window and save the window ID in a variable
 histograma  = figure;
 histogram(dis_metrix(:), edges);
@@ -98,92 +98,57 @@ while true
   figure(histograma);
   minmax_dis2 = receive_user_input(minmax_dis2);
   figure(heatm);
-  clf;
-  graphical_display_of_the_mutual_distances(user_info, dis_metrix,minmax_dis2)
+  %clf;
+  graphical_display_of_the_mutual_distances(user_info, dis_metrix, minmax_dis2)
   %ask the user for exiting or repeating the loop
   answer1 = questdlg("would you like to change the minimum or the maximum distance?");
   switch answer1
       case 'Yes'
           clf
       case 'No'
-          close(heatm,histograma)
           break;
       case 'Cancel'
-          close(heatm,histograma)
           break;
       case ' '
-          close(heatm,histograma)
           break;
   end
 end
 
 
-% Set the axes to be 1:1:1 proportion
-axis equal
-
-% Add a title to the graph
-title(text);
-
-
-
-
 %finds the amino acids that close enough to the ligand
 amino_acids = find_closest_aminoAcids(user_info, dis_metrix, minmax_dis2.min_distance);
-spatial_presentation;
-amino_acids_indexes = {};
-%creates a structs that will hold all the start and end atoms of the amino acids
-aa_struct = struct("start", [], "end", []);
-idx = 0;
-%loop on all the amino acids that were found
-for aa_index = 1:length(amino_acids)
-    % Find the closest index in start_index that is smaller than the index in aa
-    closest_start_index = max(user_info.start_index_atoms(user_info.start_index_atoms <= amino_acids(aa_index)));
-    % Find the closest index in end_index that is larger than the index in aa
-    closest_end_index = min(user_info.end_index_atoms(user_info.end_index_atoms >= amino_acids(aa_index)));
-    % Check if start and end value pair is already in aa_struct
-    is_member = ismember([aa_struct.start, aa_struct.end], [closest_start_index, closest_end_index]);
-    % If not a member, add to aa_struct
-    if ~any(is_member)
-        idx = idx + 1;
-        aa_struct(idx).start = closest_start_index;
-        aa_struct(idx).end = closest_end_index;
-    end
-end
+figure(spatial_presentation);
+% Add a title to the graph
+title(text);
 %struct of colors
-colors = winter(length(aa_struct));
+colors = winter(length(amino_acids));
 % Cell array for curve titles
 curveTitles = {};
-
 % Cell for ID-chain backbone characters
 curveTitles{1} = {'backbone ' user_info.chain_id};
 
 % Cell for foreign material code
 curveTitles{2} = {user_info.ligand_id};
 
+t = 1;
 %show the atoms on the figure
-for i = 1:length(aa_struct)
+for i = amino_acids
     %create a list of the indexes between the first and the last atom in the aa
-    integer_aa = aa_struct(i).start:aa_struct(i).end;
+    integer_aa = user_info.start_index_atoms(i):user_info.end_index_atoms(i);
     % extract all the atoms of the aa
     amino_acid_atoms = user_info.protein_atoms(integer_aa);
     amino_coordinates = extract_coordinates(amino_acid_atoms);
     %takes a color
-    color = colors(i,:);
+    color = colors(t,:);
     %show the aa on the spatial presentation 
     scatter3(amino_coordinates(:,1), amino_coordinates(:,2), amino_coordinates(:,3), 'filled', 'Marker', 'o', 'MarkerFaceColor', color);
-    aminoAcidIndex = amino_acid_atoms(i);
-    aminoAcidName = aminoAcidIndex.resName;
-    curveTitles{i+2} = {aminoAcidName};
+    aminoAcidIndex = amino_acid_atoms(1); %to find the name
+    aminoAcidName = aminoAcidIndex.resName; %get the name
+    curveTitles{t+2} = {aminoAcidName};
+    t = t+1;
 end
 
-
-% Cells for amino acid names
-% for i = 1:length(aa_struct)
-%     aminoAcidIndex = amino_acid_atoms(i);
-%     aminoAcidName = aminoAcidIndex.resName;
-%     curveTitles{i+2} = {aminoAcidName};
-% end
-
+curveTitles = curveTitles(~cellfun(@isempty,curveTitles));
 legendLabels = [curveTitles{:}];
 legend(legendLabels);
 
